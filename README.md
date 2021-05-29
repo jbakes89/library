@@ -8,13 +8,23 @@ This was created as part of The Odin Project's Full Stack JavaScript curriculum.
 ### Things I've learned/practised
 - Making objects (/classes) as functions
 - Adding methods to the object's prototype
+- Having an offscreen menu that can be opened and closed
 - (FUTURE GOAL) Storing data in localStorage
 
 ### Things to add/improve
 
 ### Patch notes (29th May, 2021)
-- Basic setup for books to be displayed in a grid
+- Setup a functioning edit menu that allows books to be added to the library
+- Setup edit and delete functions for existing books
 
 ### TODO (29th May, 2021)
-- Create an 'edit' function for books (which can also be used for adding books)
-    - Have a form in a div offscreen that slides into view for editing/adding books.
+- Bind the checkboxes on each book with the `hasBeenRead` property
+- Build upon edit function
+    - Add a button for adding new books
+    - Build 'has been read' parameter into the edit function
+- Add localStorage function
+- Workout how to handle long text
+    - flexible font size?
+    - limit max length?
+    - ellipsis or other suitable overflow method?
+- Other improvements to appearance

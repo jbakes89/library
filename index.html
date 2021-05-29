@@ -9,15 +9,50 @@
     </head>
     <body>
         <div class="l-page-wrapper">
-            <div class="l-header-wrapper">
+            <div class="l-header__wrapper">
                 <h1>Library</h1>
+                <button class="js-test">Edit Menu Test</button>
             </div>
-            <main class="l-main-wrapper">
-                <div class="l-bookcase">
+            <main class="l-main__wrapper">
+                <div class="l-bookcase js-bookcase">
                     <div class="l-bookshelves__space js-bookshelves-space">
                     </div>
                 </div>
+                <!-- Edit menu -->
+                <div class="l-edit-menu__wrapper js-edit-menu --js-hidden" style="display: none">
+                    <form class="c-edit-form js-edit-form">
+                        <div class="l-edit-item__wrapper --title">
+                            <label for="edit-title">Title</label>
+                            <textarea id="edit-title" name="edit-title" placeholder="Hamlet" rows="3" required></textarea>
+                        </div>
+                        <div class="l-edit-item__wrapper --author">
+                            <label for="edit-author">Author</label>
+                            <input type="text" id="edit-author" name="edit-author" placeholder="William Shakespeare" required>
+                        </div>
+                        <div class="l-edit-item__wrapper --pages">
+                            <label for="edit-pages">Pages</label>
+                            <input type="number" id="edit-pages" name="edit-pages" placeholder="100" min="1" step="1" required>
+                        </div>
+                        <div class="l-edit-item__wrapper --buttons">
+                            <button class="l-edit-button --cancel js-edit-cancel-button" type="button">Cancel</button>
+                            <button class="l-edit-button --submit js-edit-submit-button" type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
             </main>
+        </div>
+        <!-- Book template (display: none) -->
+        <div class="l-book__wrapper js-book-template">
+            <div class="c-book js-book {js-read}" data-index-number="{js-index}">
+                <p class="c-book__title">{js-title}</p>
+                <p class="c-book__author">{js-author}</p>
+                <p class="c-book__pages">{js-pages}p</p>
+                <div class="c-book__button-wrapper">
+                    <input type="checkbox" class="c-book__button --read js-book-read-button">
+                    <button class="c-book__button --edit js-book-edit-button">E</button>
+                    <button class="c-book__button --delete js-book-delete-button">X</button>
+                </div>
+            </div>
         </div>
         <script src="main.js"></script>
     </body>
