@@ -21,30 +21,29 @@ body {
     background-color: lightblue;
 
     height: fit-content;
-}
-
-.l-main__wrapper {
-    background-color: lightgoldenrodyellow;
-    position: relative;
-    flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .l-bookcase {
     width: 100%;
-    transition: filter ease 0.5s;
-}
-
-.l-bookcase.--js-background {
-    pointer-events: none;
-    filter: blur(2px) saturate(85%) brightness(85%);
+    flex-grow: 1;
+    position: relative;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background-color: black;
 }
 
 .l-bookshelves__space {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
+    transition: filter ease 0.5s;
 }
 
+.l-bookshelves__space.--js-background {
+    pointer-events: none;
+    filter: blur(4px) saturate(65%) brightness(35%);
+}
 
 /* Edit Menu */
 .l-edit-menu__wrapper {
@@ -57,8 +56,9 @@ body {
     height: 100%;
     width: 40%;
     max-width: 500px;
-    border-left: 4px solid black;
-    background-color: white;
+    border-left: 4px solid white;
+    background-color: black;
+    color: white;
     transition: right ease-out 0.5s;
 }
 
@@ -80,6 +80,11 @@ body {
     flex-direction: column;
 }
 
+.l-edit-item__wrapper > * {
+    background-color: black;
+    color: white;
+}
+
 .l-edit-item__wrapper.--buttons {
     flex-direction: row;
     justify-content: space-evenly;
@@ -99,6 +104,57 @@ input#edit-pages {
     font-size: 21px;
 }
 
+.l-edit-button {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    font-size: 25px;
+}
+
+.l-edit-button.--submit {
+    background: linear-gradient(129deg, rgba(102,230,102,1) 0%, rgba(194,235,194,1) 73%, rgba(102,230,102,1) 100%);
+    border: 1px solid rgb(102, 230, 102);
+    color: black;
+}
+
+.l-edit-button.--submit:hover {
+    transform: scale(1.05);
+    background: linear-gradient(165deg, rgba(102,230,102,1) 0%, rgba(194,235,194,1) 73%, rgba(102,230,102,1) 100%);
+}
+
+.l-edit-button.--submit:hover:active {
+    box-shadow: 0px 0px 12px 0px rgba(194,235,194,1);
+}
+
+.l-edit-button.--submit:disabled {
+    filter: grayscale();
+    opacity: 50%;
+}
+
+.l-edit-button.--submit.--js-add-mode {
+    font-size: 36px;
+}
+
+.c-edit-form:invalid .l-edit-button.--submit {
+    /* background: lightpink;
+    border: 1px solid rgb(177, 59, 77);
+    color: rgb(177, 59, 77); */
+}
+
+.l-edit-button.--cancel {
+    background: linear-gradient(129deg, rgba(227,34,34,1) 0%, rgba(251,108,139,1) 73%, rgba(227,34,34,1) 100%);
+    border: 1px solid rgba(227,34,34,1);
+    color: white;
+}
+
+.l-edit-button.--cancel:hover {
+    transform: scale(1.05);
+    background: linear-gradient(165deg, rgba(227,34,34,1) 0%, rgba(251,108,139,1) 73%, rgba(227,34,34,1) 100%);
+}
+
+.l-edit-button.--cancel:hover:active {
+    box-shadow: 0px 0px 12px 0px rgba(251,108,139,1);
+}
 
 
 /* Books */
@@ -128,17 +184,22 @@ input#edit-pages {
 
 .c-book {
     position: absolute;
+    box-sizing: border-box;
     top: 3%;
     left: 3%;
     width: 94%;
     height: 94%;
     background-color: lightpink;
     margin: 0px;
-    padding: 0px;
+    padding: 10px 5px;
 
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.c-book.--js-read {
+    background-color: lightgreen;
 }
 
 .c-book>p {
@@ -171,4 +232,19 @@ input#edit-pages {
     display: flex;
     justify-content: space-around;
     align-items: center;
+
+    visibility: hidden;
+}
+
+.c-book:hover>.c-book__button-wrapper {
+    visibility: visible;
+}
+
+.c-book.--add-book-button {
+    justify-content: center;
+    align-items: center;
+    font-size: 48px;
+    color: lightgreen;
+    border: 8px solid lightgreen;
+    background-color: transparent;
 }
