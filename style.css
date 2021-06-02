@@ -1,3 +1,4 @@
+/* Global Variables */
 :root {
     --title-font-size: 9em;
     --author-font-size: 7em;
@@ -6,11 +7,14 @@
     --js-book-font-size: 2px;
 }
 
+/* Outer Level Wrappers */
 body {
     margin: 0px;
     padding: 0px;
     height: 100vh;
     width: 100vw;
+
+    overflow: hidden;
 
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -24,24 +28,41 @@ body {
     flex-direction: column;
 }
 
+/* Header - Wrapper */
 .l-header__wrapper {
-    padding-left: 20px;
-    background-color: lightblue;
-
-    height: fit-content;
-    flex-shrink: 1;
+    height: 80px;
+    width: 100%;
+    flex-shrink: 0;
 }
 
+/* Header - Content */
+.l-header__content {
+    color: rgb(228, 228, 228);
+    background-color: black;
+    padding-left: 20px;
+    height: 80px;
+    width: 100%;
+    font-size: 34px;
+    position: fixed;
+    top: 0;
+}
+
+h1 {
+    margin: auto;
+}
+
+
+/* Bookcase */
 .l-bookcase {
     width: 100%;
-    /* min-height: 425px; */
     flex-grow: 1;
     position: relative;
     overflow-y: scroll;
     overflow-x: hidden;
-    background-color: black;
+    background: linear-gradient(90deg, black -100%, rgba(21,4,65,1) 100%);
 }
 
+/* Bookshelves - Space */
 .l-bookshelves__space {
     width: 100%;
     display: grid;
@@ -58,12 +79,13 @@ body {
 
 
 /* Books */
+/* Books - Hide Template */
 .js-book-template {
     display: none;
 }
 
+/* Books - Wrapper (Aspect Ratio Box) */
 .l-book__wrapper {
-    /* background-color: lightgreen; */
     position: relative;
 }
 
@@ -82,6 +104,7 @@ body {
     clear: both;
 }
 
+/* Book - Main */
 .c-book {
     position: absolute;
     box-sizing: border-box;
@@ -89,27 +112,36 @@ body {
     left: 3%;
     width: 94%;
     height: 94%;
-    background-color: lightpink;
+    background-color: rgba(255,182,193,0.8);
     margin: 0px;
-    padding: 10px 5px;
+    padding: 5px 0px;
 
     display: flex;
     flex-direction: column;
-    /* justify-content: space-between; */
 
     font-size: var(--js-book-font-size);
 }
 
 .c-book.--js-read {
-    background-color: lightgreen;
+    background-color: rgba(144,238,144,0.8);
+}
+
+.c-book:hover {
+    background-color: rgba(255,182,193,0.9);
+}
+
+.c-book.--js-read:hover {
+    background-color: rgba(144,238,144,0.9);
+}
+
+/* Book - Fields */
+.c-book>* {
+    margin: 5px 5px
 }
 
 .c-book>p {
     display: flex;
-    margin: 0;
-    /* text-align: center; */
     justify-content: flex-start;
-    /* align-items: center; */
     overflow: hidden;
 }
 
@@ -128,14 +160,14 @@ body {
     font-size: var(--pages-font-size);
 }
 
+/* Book - Buttons */
+/* Book Buttons - Wrapper */
 .c-book__button-wrapper {
     flex-basis: 25%;
 
     display: flex;
     justify-content: space-around;
     align-items: center;
-
-    /* background-color: rgba(0,0,0,0.2); */
 
     visibility: hidden;
 }
@@ -144,11 +176,11 @@ body {
     visibility: visible;
 }
 
+/* Book Buttons - Main */
 .c-book__button {
     font-size: 18px;
     height: 40px;
     width: 40px;
-    /* box-shadow: 1px 1px 9px -1px white; */
     border: 1px solid whitesmoke;
     border-radius: 50%;
     box-sizing: border-box;
@@ -157,7 +189,9 @@ body {
     align-items: center;
 }
 
+/* Book Buttons - Read Status */
 .c-book__button>img {
+    /* Prevent grabbing on read status icon */
     pointer-events: none;
 }
 
@@ -165,7 +199,6 @@ body {
     margin: 0;
     -webkit-appearance: none;
     appearance: none;
-    /* background-color: rgb(5, 114, 238); */
     background: linear-gradient(129deg, rgb(5, 114, 238) 0%, rgb(106, 175, 253) 73%, rgb(5, 114, 238) 100%);
     position: relative;
     filter: grayscale();
@@ -196,6 +229,7 @@ body {
     filter: none;
 }
 
+/* Book Buttons - Edit and Delete */
 .c-book__button.--edit {
     background-color: rgb(21, 134, 21);
     background: linear-gradient(129deg, rgb(21, 134, 21) 0%, rgb(82, 173, 82) 73%, rgb(21, 134, 21) 100%);
@@ -226,8 +260,7 @@ body {
     box-shadow: 0px 0px 10px 0px rgba(251,108,139,1);
 }
 
-
-
+/* Book - Add (new) Book Button */
 .c-book.--add-book-button {
     justify-content: center;
     align-items: center;
@@ -235,6 +268,12 @@ body {
     color: lightgreen;
     border: 8px solid lightgreen;
     background-color: transparent;
+}
+
+.c-book.--add-book-button:hover {
+    box-shadow: 0px 0px 7px 0px lightgreen,
+        inset 0px 0px 7px 0px lightgreen;
+    font-size: 60px;
 }
 
 
@@ -247,21 +286,24 @@ body {
     left: auto;
     padding: 0;
     border: none;
-    height: 100%;
+    height: 80vh;
+    min-height: 460px;
+    max-height:620px;
     width: 40%;
     max-width: 500px;
     border-left: 4px solid white;
+    border-bottom: 4px solid white;
+    border-top: 4px solid white;
     background-color: black;
     color: white;
     transition: right ease-out 0.5s;
-    /* overflow-y: auto; */
-    /* direction: rtl; */
 }
 
 .l-edit-menu__wrapper.--js-hidden {
     right: -40%;
 }
 
+/* Edit Menu - Edit Form */
 .c-edit-form {
     box-sizing: border-box;
     padding: 10px;
@@ -269,8 +311,10 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    /* overflow-y: auto; */
 }
 
+/* Edit Form - Item Wrappers */
 .l-edit-item__wrapper {
     display: flex;
     flex-direction: column;
@@ -286,20 +330,31 @@ body {
     justify-content: space-evenly;
 }
 
+/* Edit Form - Inputs */
+
+.l-edit-item__wrapper > *::placeholder {
+    color: white;
+    opacity: 25%;
+}
+
 textarea#edit-title {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 36px;
+    font-size: 30px;
     resize: none;
+    border: 1px solid white;
 }
 
 input#edit-author {
-    font-size: 30px;
+    font-size: 26px;
+    border: 1px solid white;
 }
 
 input#edit-pages {
-    font-size: 21px;
+    font-size: 18px;
+    border: 1px solid white;
 }
 
+/* Edit Form - Buttons */
 .l-edit-button {
     height: 50px;
     width: 50px;
@@ -308,18 +363,18 @@ input#edit-pages {
 }
 
 .l-edit-button.--submit {
-    background: linear-gradient(129deg, rgba(102,230,102,1) 0%, rgba(194,235,194,1) 73%, rgba(102,230,102,1) 100%);
-    border: 1px solid rgb(102, 230, 102);
+    background: linear-gradient(129deg, rgb(21, 134, 21) 0%, rgb(82, 173, 82) 73%, rgb(21, 134, 21) 100%);
+    border: 1px solid rgb(21, 134, 21);
     color: black;
 }
 
 .l-edit-button.--submit:hover {
     transform: scale(1.05);
-    background: linear-gradient(165deg, rgba(102,230,102,1) 0%, rgba(194,235,194,1) 73%, rgba(102,230,102,1) 100%);
+    background: linear-gradient(165deg, rgb(21, 134, 21) 0%, rgb(82, 173, 82) 73%, rgb(21, 134, 21) 100%);
 }
 
 .l-edit-button.--submit:hover:active {
-    box-shadow: 0px 0px 12px 0px rgba(194,235,194,1);
+    box-shadow: 0px 0px 12px 0px rgb(82, 173, 82);
 }
 
 .l-edit-button.--submit:disabled {
@@ -329,13 +384,8 @@ input#edit-pages {
 }
 
 .l-edit-button.--submit.--js-add-mode {
+    color: white;
     font-size: 36px;
-}
-
-.c-edit-form:invalid .l-edit-button.--submit {
-    /* background: lightpink;
-    border: 1px solid rgb(177, 59, 77);
-    color: rgb(177, 59, 77); */
 }
 
 .l-edit-button.--cancel {
@@ -351,4 +401,34 @@ input#edit-pages {
 
 .l-edit-button.--cancel:hover:active {
     box-shadow: 0px 0px 12px 0px rgba(251,108,139,1);
+}
+
+/* Edit Form - Invalid Input */
+.c-edit-form #edit-title:valid {
+    border: 1px solid rgb(21, 134, 21);
+}
+
+.c-edit-form #edit-title:invalid {
+    border: 1px dashed rgba(227,34,34,1);
+}
+
+.c-edit-form #edit-author:valid {
+    border: 1px solid rgb(21, 134, 21);
+}
+
+.c-edit-form #edit-author:invalid {
+    border: 1px dashed rgba(227,34,34,1);
+}
+
+.c-edit-form #edit-pages:valid {
+    border: 1px solid rgb(21, 134, 21);
+}
+
+.c-edit-form #edit-pages:invalid {
+    border: 1px dashed rgba(227,34,34,1);
+}
+
+.c-edit-form:invalid .l-edit-button.--submit {
+    filter: grayscale();
+    opacity: 50%;
 }

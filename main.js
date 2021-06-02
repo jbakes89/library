@@ -1,5 +1,9 @@
 /* Global variables */
 let myLibrary = [];
+const MIN_BOOK_WIDTH = "145px"; // No longer used for overall book sizing, but still used for font scaling.
+// const MAX_BOOK_WIDTH = "200px";
+const MIN_BOOK_WRAPPER_WIDTH = "150px";
+const MAX_BOOK_WRAPPER_WIDTH = "215px";
 
 // HTML elements
 const editMenu = document.querySelector(".js-edit-menu");
@@ -31,8 +35,8 @@ Book.prototype.info = function () {
 
 Book.prototype.asDiv = function () {
     const template = document.querySelector(".js-book-template")
-    const book = template.cloneNode(true);
-    book.classList.remove("js-book-template");
+    const bookWrapper = template.cloneNode(true);
+    bookWrapper.classList.remove("js-book-template");
     const map = {
         "{js-read-class}": `${this.hasBeenRead ? " --js-read" : ""}`,
         "{js-title}": this.title,
@@ -46,8 +50,12 @@ Book.prototype.asDiv = function () {
         filterStrings += `${prop}|`;
     }
     const filter = RegExp("(?:" + filterStrings.slice(0,-1) + ")", "g");
-    book.innerHTML = book.innerHTML.replace(filter, match => { return map[match] });
-    return book;
+    bookWrapper.innerHTML = bookWrapper.innerHTML.replace(filter, match => { return map[match] });
+    return bookWrapper;
+}
+
+Book.prototype.getElement = function () {
+    return document.querySelector(`.js-book[data-index-number="${myLibrary.indexOf(this)}"]`);
 }
 
 Book.prototype.setReadStatus = function (readStatus) {
@@ -152,13 +160,15 @@ const readCheckboxToggled = function (e){
 // Update/refresh books on display
 function addToDisplayWithBooks(books) {
     const parsedArray = (books instanceof Book) ? [books] : books
-    const fragment = document.createDocumentFragment();
+    // const fragment = document.createDocumentFragment();
     for (var book of parsedArray) {
-        const bookElement = book.asDiv();
-        bindEventsToBookElement(bookElement);
-        fragment.appendChild(bookElement);
+        const bookWrapper = book.asDiv();
+        bindEventsToBookElement(bookWrapper);
+        // fragment.appendChild(bookWrapper);
+        bookshelvesSpace.appendChild(bookWrapper);
+        fitTextOnBookElement(bookWrapper.querySelector(".js-book"));
     }
-    bookshelvesSpace.appendChild(fragment);    
+    // bookshelvesSpace.appendChild(fragment);
 }
 
 function refreshWholeBookDisplay() {
@@ -177,12 +187,13 @@ function updateBook(book, newTitle, newAuthor, newPages, newReadStatus) {
         newBook.saveToStorage();
     } else {
         // Otherwise, edit existing book
-        const bookElement = getBookElementWithindex(bookIndex);
+        const bookElement = getBookElementWithIndex(bookIndex);
         bookElement.querySelector(".js-book-title").textContent = book.title = newTitle;
         bookElement.querySelector(".js-book-author").textContent = book.author = newAuthor;
         book.numOfPages = newPages;
         bookElement.querySelector(".js-book-pages").textContent = String(book.numOfPages) + "p";
         book.setReadStatus(newReadStatus);
+        fitTextOnBookElement(bookElement);
         book.saveToStorage();
     }
 }
@@ -191,7 +202,8 @@ function getBookElementWithIndex(bookIndex) {
     return bookshelvesSpace.querySelector(`.js-book[data-index-number="${bookIndex}"]`)
 }
 
-// Responsive resizing
+/* Responsive resizing */
+// Useful functions
 function getCurrentNumberOfColumns() {
     const computedStyle = window.getComputedStyle(bookshelvesSpace);
     return computedStyle.gridTemplateColumns.split(" ").length;
@@ -210,45 +222,60 @@ function changeNumberOfColumnsBy(n) {
     }
 }
 
+function setNumberOfColumnsTo(n) {
+    if (parseInt(n)) {
+        const currentNumColumns = getCurrentNumberOfColumns();
+        bookshelvesSpace.style.gridTemplateColumns = `repeat(${parseInt(n)}, 1fr)`;
+    }
+}
+
 function elementOverflows(el) {
     return el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth;
 }
 
-const MIN_BOOK_WIDTH = "145px";
-const DEFAULT_BOOK_WIDTH = "180px"
-
+// Resize books in grid when window is resized
 const windowWasResized = function () {
-    /* Adjusting number of columns depending on book size */
-    // Check that there are any books in the display
-    const sampleBook = bookshelvesSpace.querySelector(".js-book")
-    if (!sampleBook) { return; };
-    // Check book width
-    const bookWidth = sampleBook.offsetWidth;
-    if (sampleBook.offsetWidth < parseFloat(MIN_BOOK_WIDTH)) {
-        // If smaller than min-width, reduce number of columns
-        changeNumberOfColumnsBy(-1);
-    } else {
-        // Increase the number of columns if the books will fit at default width
-        const numColumns = getCurrentNumberOfColumns();
-        const proposedWidth = parseFloat(DEFAULT_BOOK_WIDTH) * (numColumns + 1);
-        const currentOccupiedWidth = bookWidth * numColumns;
-        if (proposedWidth <= currentOccupiedWidth &&
-            getCurrentNumberOfRows() > 1
-        ) {
-            changeNumberOfColumnsBy(1);
-        }
-    }
+
+    const minColumns = Math.ceil(bookshelvesSpace.offsetWidth / parseFloat(MAX_BOOK_WRAPPER_WIDTH));
+    const maxColumns = Math.floor(bookshelvesSpace.offsetWidth / parseFloat(MIN_BOOK_WRAPPER_WIDTH));
+    setNumberOfColumnsTo(Math.max(maxColumns, minColumns));
+
 
     /* Adjusting font size to fit on book*/
     // Baseline font size is set to fit decently at the MIN_BOOK_WIDTH, so we scale proportionally with the width
+    const sampleBook = bookshelvesSpace.querySelector(".js-book, .js-add-book-button");
+    let bookWidth = sampleBook.offsetWidth;
     const widthRatio = bookWidth/parseFloat(MIN_BOOK_WIDTH);
+
     const rootStyle = window.getComputedStyle(document.body)
     const baselineFontSize = rootStyle.getPropertyValue("--baseline-book-font-size");
     const newFontSize = `${parseFloat(baselineFontSize) * widthRatio}px`;
     document.documentElement.style.setProperty("--js-book-font-size", newFontSize);
+
+    /* Ellipsize text */
+    for (book of myLibrary) {
+        fitTextOnBookElement(book.getElement());
+    }
 };
 
 window.addEventListener("resize", windowWasResized);
+
+/* Ellipsize text if it overflows its element */
+function reduceTextContentOfElement(el) {
+    if (elementOverflows(el)) {
+        el.textContent = el.textContent.slice(0, -3) + "...";
+        while (elementOverflows(el)) {
+            el.textContent = el.textContent.slice(0, -4) + el.textContent.slice(-3);
+        }
+    }
+}
+
+function fitTextOnBookElement(el) {
+    const pElements = el.querySelectorAll("p");
+    pElements.forEach(p => {
+        reduceTextContentOfElement(p);
+    });
+}
 
 
 /* Edit/Add Menu */
@@ -265,8 +292,10 @@ function openEditMenu(inAddMode) {
     } else {
         editSubmitButton.textContent = "\u2713";
         editSubmitButton.classList.remove("--js-add-mode");
-        // Disable submit button if no changes have been made
-        editSubmitButton.disabled = true;
+        /* Disable submit button if no changes have been made (I decided this wasn't
+        necessary, especially since the submit button was changed to a check mark, instead
+        of "Save Changes"). */
+        // editSubmitButton.disabled = true;
     }
 
     // Make sure editMenu is visible
@@ -278,7 +307,7 @@ function openEditMenu(inAddMode) {
 }
 
 // Disable submit button when editing if nothing has been changed
-function bookDetailsHaveBeenEdited() {
+function bookDetailsWillBeAltered() {
     if (bookBeingEdited) {
         return !(bookBeingEdited.title == editForm.elements["edit-title"].value &&
             bookBeingEdited.author == editForm.elements["edit-author"].value &&
@@ -290,9 +319,9 @@ function bookDetailsHaveBeenEdited() {
     }
 }
 
-editForm.addEventListener("input", e => {
-    editSubmitButton.disabled = !bookDetailsHaveBeenEdited();
-})
+// editForm.addEventListener("input", e => {
+//     editSubmitButton.disabled = !bookDetailsWillBeAltered();
+// })
 
 // Closing
 function closeEditMenu() {
@@ -314,6 +343,7 @@ function toggleEditMenu() {
 editMenu.addEventListener("transitionend", () => {
     if (editMenu.classList.contains("--js-hidden")) {
         editMenu.style.display = "none";
+        editSubmitButton.disabled = false;
         editForm.reset();
     } else {
         editForm.elements[0].focus();
@@ -323,8 +353,8 @@ editMenu.addEventListener("transitionend", () => {
 // Close with mouse click outside of edit menu
 document.addEventListener("mousedown", e => {
     if (!editMenu.classList.contains("--js-hidden") && // Edit menu is open
-        e.target != editMenu && // and click outside edit menu
-        !editMenu.contains(e.target) // and its children...
+        e.target == bookcase && // and click on bookcase
+        e.clientX < editMenu.getBoundingClientRect().x
     ) {
         closeEditMenu();
     }
@@ -333,7 +363,14 @@ document.addEventListener("mousedown", e => {
 
 // Update top of editMenu when the bookcase is scrolled
 bookcase.addEventListener("scroll", e => {
-    editMenu.style.top = `${bookcase.scrollTop}px`;
+    // If bottom of editMenu visible lock to bottom of screen
+    if ((bookcase.scrollTop + bookcase.offsetHeight) > (editMenu.offsetTop + editMenu.offsetHeight)) {
+        editMenu.style.top = `${bookcase.scrollTop + bookcase.offsetHeight - editMenu.offsetHeight}px`;
+    }
+    // Else if top of editMenu visible lock to top of screen
+    else if (editMenu.offsetTop > bookcase.scrollTop) {
+        editMenu.style.top = `${bookcase.scrollTop}px`;
+    }
 });
 
 
@@ -386,13 +423,11 @@ function bindEventsToBookElement(bookElement) {
 
 /* Keyboard Interaction */
 const onKeydown = function(e) {
-    console.log(`Keydown event with code ${e.key}`)
     switch (e.key) {
         // Handle "Enter" presses in book editing form
         case "Enter":
         case "NumpadEnter":
             if (e.target.form == editForm) {
-                console.log(`activeElement is ${document.activeElement}`);
                 e.preventDefault();
                 submitEditForm();
             }
@@ -433,15 +468,6 @@ function storageAvailable(type) {
             // Acknowledge QuotaExceededError only if there's something already stored
             (storage && storage.length !== 0);
     }
-}
-
-if (storageAvailable("localStorage")) {
-    console.log("localStorage is available");
-    useLocalStorage = true;
-} else {
-    useLocalStorage = false;
-    alert("Please note that the book collection will not be saved.\n" +
-        "If you would like to save your collection, please check your local storage settings.");
 }
 
 function loadBooksFromStorage() {
@@ -490,23 +516,52 @@ function clearStorage() {
     }
 }
 
-// Load books from storage, or fill library with placeholder books if local storage is empty
-if (useLocalStorage) {
-    if (window.localStorage.length > 0) {
-        loadBooksFromStorage();
+function testLargeNumberOfBooks() {
+    clearStorage()
+    let newBooks = []
+    for (var i = 0; i < 500; i++) {
+        const book = new Book(`Book-${i}`, `Author-${i}`, i, i % 3 == 0);
+        book.saveToStorage();
+        newBooks.push(book);
+    }
+    addBooksToLibrary(newBooks);
+}
+
+
+function main() {
+    windowWasResized();
+
+    if (storageAvailable("localStorage")) {
+        useLocalStorage = true;
     } else {
-        const placeholderBooks = [
-            new Book("The Midnight Library", "Matt Haig", 288, false),
-            new Book("Klara and the Sun", "Kazuo Ishiguro", 304, true),
-            new Book("To Kill a Mockingbird", "Harper Lee", 324, false),
-            new Book("The Little Prince", "Antoine de Saint-Exup\u00E9ry", 93, true),
-            new Book("Harry Potter and the Deathly Hallows", "J.K. Rowling", 759, false)
-        ];
-        addBooksToLibrary(placeholderBooks);
-        for (book of placeholderBooks) {
-            book.saveToStorage();
+        useLocalStorage = false;
+        alert("Please note that the book collection will not be saved.\n" +
+            "If you would like to save your collection, please check your local storage settings.");
+    }
+
+    // testLargeNumberOfBooks();
+
+    // Load books from storage, or fill library with placeholder books if local storage is empty
+    if (useLocalStorage) {
+        if (window.localStorage.length > 0) {
+            loadBooksFromStorage();
+        } else {
+            const placeholderBooks = [
+                new Book("The Midnight Library", "Matt Haig", 288, false),
+                new Book("Klara and the Sun", "Kazuo Ishiguro", 304, true),
+                new Book("To Kill a Mockingbird", "Harper Lee", 324, false),
+                new Book("The Little Prince", "Antoine de Saint-Exup\u00E9ry", 93, true),
+                new Book("Harry Potter and the Deathly Hallows", "J.K. Rowling", 759, false),
+                new Book("Noisy Outlaws, Unfriendly Blobs, and Some Other Things That Aren't as Scary, Maybe, Depending on How You Feel About Lost Lands, Stray Cellphones, Creatures from the Sky, Parents Who Disappear in Peru, a Man Named Lars Farf, and One Other Story We Couldn't Quite Finish, So Maybe You Could Help Us Out",
+                    "Eli Horowitz (Editor), Ted Thompson (Editor), Neil Gaiman, Lemony Snicket, Nick Hornsby, George Saunders, Kelly Link, Richard Kennedy, Jon Scieszka, Sam Swope, Clement Freud, James Kochalka, Jeanne DuPrau, Jonathan Safran Foer",
+                    208, false)
+            ];
+            addBooksToLibrary(placeholderBooks);
+            for (book of placeholderBooks) {
+                book.saveToStorage();
+            }
         }
     }
 }
 
-windowWasResized();
+main();
