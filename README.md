@@ -7,6 +7,9 @@ This was created as part of The Odin Project's Full Stack JavaScript curriculum.
 
 As of 3rd June, 2021, the project is finished for now. The things I've learned and practised, as well as potential additions/improvements for the future, are described below.
 
+## Update (starting 6th July, 2021)
+As per the "Classes" lesson of the "Javascript" course on the TOP Full Stack JavaScript path, I am updating the Library app using ES6 Classes.
+
 ### Things I've learned/practised
 - Making objects (/classes) as functions
 - Adding methods to the object's prototype
@@ -22,14 +25,9 @@ As of 3rd June, 2021, the project is finished for now. The things I've learned a
 - It might be better to have the edit menu open when clicking anywhere on a book (and maybe get rid of the edit book button).
 - I feel like there ought to be a more efficient way of truncating text than going one character at a time. Now that the design is mostly complete, the ellipsizing function could be made much more efficient for *very* long titles by setting a `MAXIMUM_DISPLAYABLE_TITLE_LENGTH` (e.g., 100 characters or so), and reducing the title to this length before starting the loop. However, for this practice project, I wanted to keep the function as design-agnostic as possible.
 
-### Patch notes (3rd June, 2021)
-- Implemented a system to automatically shorten text (with an ellipsis) to fit on the books.
-- Improved movement of edit menu when bookcase is scrolled. The edit menu is no longer squashed at smaller window heights.
-- Set header `position: fixed`, which is more semantically appropriate.
-- Prevented edit menu from closing when clicking on the header or scrollbar.
-- Improved/simplified fluid grid resizing for different window sizes.
-- Tested performance for large-ish libraries (500 books).
-- Added visual feedback for add/edit form validation.
+### Patch notes (6th July, 2021)
+- Updated to use `class` for the `Book` class.
+    - As stated above, I think the whole script could be reformatted with better scoping, but I don't think this would be the best use of my time at the moment, since I will be able to practise these skills in future projects throughout the course. 
 
 
 ## External Resources

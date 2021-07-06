@@ -19,79 +19,84 @@ let bookBeingEdited = null;
 let useLocalStorage = false;
 
 /* Book Object Definition */
-function Book(title, author, numOfPages, hasBeenRead) {
-    this.title = title || "";
-    this.author = author || "";
-    this.numOfPages = numOfPages || 1;
-    this.hasBeenRead = hasBeenRead || false;
-    this.storageKey = null;
-}
-
-Book.prototype.info = function () {
-    return `${this.title} by ${this.author}, ` + 
-        `${this.numOfPages}p, ` +
-        `${this.hasBeenRead ? "has been read" : "not read yet"}`;
-};
-
-Book.prototype.asDiv = function () {
-    const template = document.querySelector(".js-book-template")
-    const bookWrapper = template.cloneNode(true);
-    bookWrapper.classList.remove("js-book-template");
-    const map = {
-        "{js-read-class}": `${this.hasBeenRead ? " --js-read" : ""}`,
-        "{js-title}": this.title,
-        "{js-author}": this.author,
-        "{js-pages}": String(this.numOfPages),
-        "{js-index}": myLibrary.indexOf(this),
-        "{js-read-checkbox}": this.hasBeenRead ? " checked" : ""
+class Book {
+    
+    constructor({title="", author="", pages=1, readStatus=false} = {}) {
+        this.title = title;
+        this.author = author;
+        this.numOfPages = pages;
+        this.hasBeenRead = readStatus;
+        this.storageKey = null;
     }
-    let filterStrings = "";
-    for (var prop in map) {
-        filterStrings += `${prop}|`;
+
+    info() {
+        return `${this.title} by ${this.author}, ` + 
+            `${this.numOfPages}p, ` +
+            `${this.hasBeenRead ? "has been read" : "not read yet"}`;
     }
-    const filter = RegExp("(?:" + filterStrings.slice(0,-1) + ")", "g");
-    bookWrapper.innerHTML = bookWrapper.innerHTML.replace(filter, match => { return map[match] });
-    return bookWrapper;
-}
 
-Book.prototype.getElement = function () {
-    return document.querySelector(`.js-book[data-index-number="${myLibrary.indexOf(this)}"]`);
-}
+    asDiv() {
+        const template = document.querySelector(".js-book-template")
+        const bookWrapper = template.cloneNode(true);
+        bookWrapper.classList.remove("js-book-template");
+        const map = {
+            "{js-read-class}": `${this.hasBeenRead ? " --js-read" : ""}`,
+            "{js-title}": this.title,
+            "{js-author}": this.author,
+            "{js-pages}": String(this.numOfPages),
+            "{js-index}": myLibrary.indexOf(this),
+            "{js-read-checkbox}": this.hasBeenRead ? " checked" : ""
+        }
+        let filterStrings = "";
+        for (var prop in map) {
+            filterStrings += `${prop}|`;
+        }
+        const filter = RegExp("(?:" + filterStrings.slice(0,-1) + ")", "g");
+        bookWrapper.innerHTML = bookWrapper.innerHTML.replace(filter, match => { return map[match] });
+        return bookWrapper;
+    }
 
-Book.prototype.setReadStatus = function (readStatus) {
-    this.hasBeenRead = readStatus;
-    const bookIndex = myLibrary.indexOf(this);
-    const bookElement = document.querySelector(`.js-book[data-index-number="${bookIndex}"]`);
-    readStatus ? bookElement.classList.add("--js-read") : bookElement.classList.remove("--js-read");
-    bookElement.querySelector(".js-book-read-checkbox").checked = readStatus;
-    this.saveToStorage();
-}
+    getElement() {
+        return document.querySelector(`.js-book[data-index-number="${myLibrary.indexOf(this)}"]`);
+    }
 
-Book.prototype.toggleReadStatus = function () {
-    this.setReadStatus(!this.hasBeenRead);
-}
+    setReadStatus(readStatus) {
+        this.hasBeenRead = readStatus;
+        const bookIndex = myLibrary.indexOf(this);
+        const bookElement = document.querySelector(`.js-book[data-index-number="${bookIndex}"]`);
+        readStatus ? bookElement.classList.add("--js-read") : bookElement.classList.remove("--js-read");
+        bookElement.querySelector(".js-book-read-checkbox").checked = readStatus;
+        this.saveToStorage();
+    }
 
-Book.prototype.toJSONString = function () {
-    return JSON.stringify(this);
-}
+    toggleReadStatus() {
+        this.setReadStatus(!this.hasBeenRead);
+    }
 
-Book.prototype.saveToStorage = function () {
-    saveBookToStorage(this);
-}
+    toJSONString() {
+        return JSON.stringify(this);
+    }
 
-Book.prototype.delete = function () {
-    const bookIndex = myLibrary.indexOf(this);
-    myLibrary.splice(bookIndex, 1);
-    this.deleteFromStorage();
-}
+    saveToStorage() {
+        saveBookToStorage(this);
+    }
 
-Book.prototype.deleteFromStorage = function () {
-    deleteBookFromStorage(this);
-}
+    delete() {
+        const bookIndex = myLibrary.indexOf(this);
+        myLibrary.splice(bookIndex, 1);
+        this.deleteFromStorage();
+    }
 
-Book.fromString = function (JSONString) {
-    const parsedString = JSON.parse(JSONString);
-    return Object.assign(new Book(), parsedString);
+    deleteFromStorage() {
+        deleteBookFromStorage(this);
+    }
+
+    static fromString(JSONString) {
+        console.log(`Book.fromString() was called with JSONString = ${JSONString}`)
+        const parsedString = JSON.parse(JSONString);
+        return new Book(parsedString);
+    }
+
 }
 
 
@@ -182,7 +187,7 @@ function updateBook(book, newTitle, newAuthor, newPages, newReadStatus) {
     const bookIndex = myLibrary.indexOf(book);
     if (bookIndex == -1) {
         // If book is not found in myLibrary, add a new book
-        const newBook = new Book(newTitle, newAuthor, newPages, newReadStatus)
+        const newBook = new Book({title: newTitle, author: newAuthor, pages: newPages, readStatus: newReadStatus})
         addBookToLibrary(newBook);
         newBook.saveToStorage();
     } else {
@@ -516,11 +521,11 @@ function clearStorage() {
     }
 }
 
-function testLargeNumberOfBooks() {
+function testLargeNumberOfBooks(n = 500) {
     clearStorage()
     let newBooks = []
-    for (var i = 0; i < 500; i++) {
-        const book = new Book(`Book-${i}`, `Author-${i}`, i, i % 3 == 0);
+    for (var i = 0; i < n; i++) {
+        const book = new Book({title: `Book-${i}`, author: `Author-${i}`, pages: i, readStatus: i % 3 == 0});
         book.saveToStorage();
         newBooks.push(book);
     }
@@ -547,14 +552,14 @@ function main() {
             loadBooksFromStorage();
         } else {
             const placeholderBooks = [
-                new Book("The Midnight Library", "Matt Haig", 288, false),
-                new Book("Klara and the Sun", "Kazuo Ishiguro", 304, true),
-                new Book("To Kill a Mockingbird", "Harper Lee", 324, false),
-                new Book("The Little Prince", "Antoine de Saint-Exup\u00E9ry", 93, true),
-                new Book("Harry Potter and the Deathly Hallows", "J.K. Rowling", 759, false),
-                new Book("Noisy Outlaws, Unfriendly Blobs, and Some Other Things That Aren't as Scary, Maybe, Depending on How You Feel About Lost Lands, Stray Cellphones, Creatures from the Sky, Parents Who Disappear in Peru, a Man Named Lars Farf, and One Other Story We Couldn't Quite Finish, So Maybe You Could Help Us Out",
-                    "Eli Horowitz (Editor), Ted Thompson (Editor), Neil Gaiman, Lemony Snicket, Nick Hornsby, George Saunders, Kelly Link, Richard Kennedy, Jon Scieszka, Sam Swope, Clement Freud, James Kochalka, Jeanne DuPrau, Jonathan Safran Foer",
-                    208, false)
+                new Book({title: "The Midnight Library", author: "Matt Haig", pages: 288, readStatus: false}),
+                new Book({title: "Klara and the Sun", author: "Kazuo Ishiguro", pages: 304, readStatus: true}),
+                new Book({title: "To Kill a Mockingbird", author: "Harper Lee", pages: 324, readStatus: false}),
+                new Book({title: "The Little Prince", author: "Antoine de Saint-Exup\u00E9ry", pages: 93, readStatus: true}),
+                new Book({title: "Harry Potter and the Deathly Hallows", author: "J.K. Rowling", pages: 759, readStatus: false}),
+                new Book({title: "Noisy Outlaws, Unfriendly Blobs, and Some Other Things That Aren't as Scary, Maybe, Depending on How You Feel About Lost Lands, Stray Cellphones, Creatures from the Sky, Parents Who Disappear in Peru, a Man Named Lars Farf, and One Other Story We Couldn't Quite Finish, So Maybe You Could Help Us Out",
+                    author: "Eli Horowitz (Editor), Ted Thompson (Editor), Neil Gaiman, Lemony Snicket, Nick Hornsby, George Saunders, Kelly Link, Richard Kennedy, Jon Scieszka, Sam Swope, Clement Freud, James Kochalka, Jeanne DuPrau, Jonathan Safran Foer",
+                    pages: 208, readStatus: false})
             ];
             addBooksToLibrary(placeholderBooks);
             for (book of placeholderBooks) {
